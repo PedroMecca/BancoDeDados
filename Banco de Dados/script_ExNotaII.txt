@@ -1,0 +1,127 @@
+create database ExNotaII;
+use ExNotaII;
+
+create table tipo (
+    id int primary key,
+    descricao varchar(255) not null
+);
+
+insert into tipo (id, descricao) values
+(1, 'Pizza'),
+(2, 'Lanche'),
+(3, 'Bebida');
+
+create table produto (
+    id int primary key,
+    nome varchar(255) not null,
+    preco decimal(10, 2) not null,
+    tipo_id int,
+    foreign key (tipo_id) references tipo(id)
+);
+
+insert into produto (id, nome, preco, tipo_id) values
+(1, 'Pizza Marguerita', 25.00, 1),
+(2, 'X-Bacon', 15.00, 2),
+(3, 'Coca-Cola', 5.00, 3);
+
+insert into produto(id, nome, preco, tipo_id) values
+(4,'Calabresa',30.00,1);
+
+create table cliente (
+    id int primary key,
+    nome varchar(255) not null,
+    telefone varchar(20),
+    endereco varchar(255)
+);
+
+insert into cliente (id, nome, telefone, endereco) values
+(1, 'João Silva', '123456789', 'Rua A, 123'),
+(2, 'Maria Oliveira', '987654321', 'Avenida B, 456'),
+(3, 'Carlos Santos', '111222333', 'Travessa C, 789');
+
+create table pedido (
+    id int primary key,
+    data date,
+    cliente_id int,
+    foreign key (cliente_id) references cliente(id)
+);
+
+insert into pedido (id, data, cliente_id) values
+(1, '2023-11-17', 1),
+(2, '2023-11-18', 2),
+(3, '2023-11-19', 3);
+
+create table itensPedido (
+    idPedido int,
+    idProduto int,
+    quantidade int,
+    primary key (idPedido, idProduto),
+    foreign key (idPedido) references pedido(id),
+    foreign key (idProduto) references produto(id)
+);
+
+insert into itensPedido (idPedido, idProduto, quantidade) values
+(1, 1, 2),
+(1, 2, 1),
+(2, 3, 3);
+
+-- ---------------------------------------------------Operações---------------------------------------------------
+
+select produto.nome, produto.preco, tipo.descricao as tipo
+from produto
+join tipo on produto.tipo_id = tipo.id
+order by tipo.descricao; -- ex c
+
+select pedido.id, pedido.data, cliente.nome as nome_cliente
+from pedido
+join cliente on pedido.cliente_id = cliente.id; -- ex d
+
+select produto.nome, produto.preco * 3 as custo_total
+from produto
+join tipo on produto.tipo_id = tipo.id
+where tipo.descricao = 'Pizza' and produto.nome = 'Calabresa'; -- ex e
+
+select tipo.descricao as tipo, COUNT(produto.id) as quantidade
+from produto
+join tipo on produto.tipo_id = tipo.id
+group by tipo.descricao; -- ex f
+
+select avg(produto.preco) as media_preco
+from produto
+join tipo on produto.tipo_id = tipo.id
+where tipo.descricao = 'Pizza'; -- ex g
+
+select tipo.descricao as tipo, COUNT(produto.id) as quantidade, MAX(produto.preco) as valor_maximo, MIN(produto.preco) as valor_minimo
+from produto
+join tipo on produto.tipo_id = tipo.id
+where tipo.descricao in ('Lanche', 'Bebida')
+group by tipo.descricao; -- ex h
+
+select t.descricao as tipo, avg(p.preco) as media_preco
+from produto p
+join tipo t on p.tipo_id = t.id
+group by t.descricao
+having avg(p.preco) > 30.00; -- ex i
+
+select pedido.id as numero_pedido, count(itensPedido.idProduto) as quantidade_produtos
+from pedido
+join itensPedido on pedido.id = itensPedido.idPedido
+group by pedido.id; -- ex j
+
+select pedido.id as numero_pedido, SUM(produto.preco * itensPedido.quantidade) as total_venda
+from pedido
+join itensPedido on pedido.id = itensPedido.idPedido
+join produto on itensPedido.idProduto = produto.id
+where pedido.id = 2; -- ex k
+
+
+
+
+
+
+
+
+
+
+
+
